@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-require('dotenv').config();
+require('dotenv').config(); // Charger les variables d'environnement
+const path = require('path'); // Nécessaire pour gérer les chemins d'accès
 
 const app = express();
 
@@ -19,6 +20,9 @@ const phraseSchema = new mongoose.Schema({
 const Phrase = mongoose.model('Phrase', phraseSchema);
 
 app.use(bodyParser.json());
+
+// Servir les fichiers statiques
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/ajouter', async (req, res) => {
   const { code, phrase } = req.body;
@@ -53,12 +57,6 @@ app.delete('/supprimer/:code', async (req, res) => {
     res.status(500).send('Erreur lors de la suppression de la phrase');
   }
 });
-
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
-
-app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur en écoute sur le port ${PORT}`));
