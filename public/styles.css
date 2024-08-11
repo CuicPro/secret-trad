@@ -41,6 +41,7 @@ body {
 textarea {
   width: calc(100% - 24px);
   padding: 10px;
+  color: #C8ACD6;
   border: 2px solid #C8ACD6;
   background-color: #433D8B;
   border-radius: 10px;

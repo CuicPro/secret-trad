@@ -1,37 +1,70 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+require('dotenv').config(); // Charger les variables d'environnement
 const app = express();
-const PORT = 3000;
 
-// Middleware pour servir les fichiers statiques (HTML, CSS, JS) du dossier 'public'
+const mongoURI = process.env.MONGO_URI;
+
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connecté'))
+  .catch(err => console.error('Erreur de connexion MongoDB:', err));
+
+const phraseSchema = new mongoose.Schema({
+  code: { type: String, required: true },
+  phrase: { type: String, required: true }
+});
+
+const Phrase = mongoose.model('Phrase', phraseSchema);
+
+app.use(bodyParser.json());
+
+
+const path = require('path');
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Route pour obtenir le fichier JSON
-app.get('/bdd.json', (req, res) => {
-    fs.readFile(path.join(__dirname, 'bdd.json'), 'utf8', (err, data) => {
-        if (err) {
-            console.error('Erreur lors de la lecture de bdd.json:', err);
-            res.status(500).send('Erreur serveur');
-            return;
-        }
-        res.json(JSON.parse(data));
-    });
+// Cette route va servir index.html par défaut
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Route pour mettre à jour le fichier JSON
-app.post('/bdd.json', express.json(), (req, res) => {
-    fs.writeFile(path.join(__dirname, 'bdd.json'), JSON.stringify(req.body, null, 2), (err) => {
-        if (err) {
-            console.error('Erreur lors de l\'écriture de bdd.json:', err);
-            res.status(500).send('Erreur serveur lors de l\'écriture');
-            return;
-        }
-        res.status(200).send('Mise à jour réussie');
-    });
+
+
+app.post('/ajouter', async (req, res) => {
+  const { code, phrase } = req.body;
+  try {
+    await Phrase.create({ code, phrase });
+    res.send('Phrase ajoutée');
+  } catch (error) {
+    res.status(500).send('Erreur lors de l\'ajout de la phrase');
+  }
 });
 
-// Lancer le serveur sur le port spécifié
-app.listen(PORT, () => {
-    console.log(`Serveur démarré sur http://localhost:${PORT}`);
+app.get('/traduire/:code', async (req, res) => {
+  const { code } = req.params;
+  try {
+    const phrase = await Phrase.findOne({ code });
+    res.send(phrase ? phrase.phrase : 'Phrase non trouvée');
+  } catch (error) {
+    res.status(500).send('Erreur lors de la récupération de la phrase');
+  }
 });
+
+app.delete('/supprimer/:code', async (req, res) => {
+  const { code } = req.params;
+  try {
+    const result = await Phrase.findOneAndDelete({ code });
+    if (result) {
+      res.send('Phrase supprimée');
+    } else {
+      res.status(404).send('Phrase non trouvée');
+    }
+  } catch (error) {
+    res.status(500).send('Erreur lors de la suppression de la phrase');
+  }
+});
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Serveur en écoute sur le port ${PORT}`));

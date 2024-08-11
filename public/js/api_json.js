@@ -1,35 +1,20 @@
-const apiUrl = "bdd.json";
+const apiUrl = "/"; // Ce n'est plus nécessaire
 
-// Fonction pour charger la base de données
-async function fetchBDD() {
-  try {
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error("Erreur lors du chargement du fichier JSON");
-    }
-    const data = await response.json();
-    console.log("Contenu du JSON chargé :", data);
-    return data;
-  } catch (error) {
-    console.error("Erreur dans fetchBDD:", error);
-    return {};
-  }
-}
-
-// Fonction pour supprimer une phrase du JSON
+// Fonction pour supprimer une phrase de MongoDB
 async function supprimerPhrase(identifiant) {
   try {
-    let baseDeDonnees = await fetchBDD();
-
-    // Supprimer l'entrée correspondant à l'identifiant
-    delete baseDeDonnees[identifiant];
-
-    // Envoyer la base de données mise à jour
-    await envoyerBDD(baseDeDonnees);
+    const response = await fetch(`/supprimer/${identifiant}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      throw new Error("Erreur lors de la suppression de la phrase");
+    }
+    console.log(`Phrase avec le code ${identifiant} supprimée`);
   } catch (error) {
     console.error("Erreur lors de la suppression de la phrase:", error);
   }
 }
+
 
 // Fonction pour traduire une phrase ou plusieurs phrases
 async function traduirePhrase() {
@@ -41,33 +26,23 @@ async function traduirePhrase() {
   }
 
   const identifiants = inputText.split(/\s+/); // Séparer les codes par des espaces
-  const baseDeDonnees = await fetchBDD();
-
   const traductions = [];
-
-  // Fonction récursive pour trouver la traduction finale
-  function obtenirPhrase(identifiant) {
-    if (baseDeDonnees[identifiant]) {
-      const valeur = baseDeDonnees[identifiant];
-      if (baseDeDonnees[valeur]) {
-        return obtenirPhrase(valeur);
-      } else {
-        return valeur;
-      }
-    } else {
-      return null;
-    }
-  }
 
   // Traiter chaque code secret
   for (const identifiant of identifiants) {
-    const phrase = obtenirPhrase(identifiant);
-    if (phrase) {
-      traductions.push(phrase);
-      // Supprimer la phrase du fichier JSON après traduction
-      await supprimerPhrase(identifiant);
-    } else {
-      traductions.push("Phrase non trouvée");
+    try {
+      const response = await fetch(`/traduire/${identifiant}`);
+      const phrase = await response.text();
+
+      if (phrase !== "Phrase non trouvée") {
+        traductions.push(phrase);
+        // Supprimer la phrase de la base de données après traduction
+        await supprimerPhrase(identifiant);
+      } else {
+        traductions.push(phrase);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la traduction de la phrase:", error);
     }
   }
 
@@ -78,7 +53,7 @@ async function traduirePhrase() {
   document.getElementById("phraseInput").value = "";
 }
 
-// Fonction pour ajouter une nouvelle phrase
+// Fonction pour ajouter une nouvelle phrase à MongoDB
 async function ajouterPhrase() {
   const phrase = document.getElementById("phraseInput").value.trim();
   if (!phrase) {
@@ -87,31 +62,28 @@ async function ajouterPhrase() {
     return;
   }
 
-  let baseDeDonnees = await fetchBDD();
   const codeSecret = genererCodeSecret(phrase.length);
   const codeChiffre = chiffrer(codeSecret);
-  baseDeDonnees[codeChiffre] = phrase;
 
-  await envoyerBDD(baseDeDonnees);
-  document.getElementById("result").innerText = `${codeChiffre}`;
+  try {
+    const response = await fetch('/ajouter', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ code: codeChiffre, phrase }),
+    });
+    if (response.ok) {
+      document.getElementById("result").innerText = `${codeChiffre}`;
+    } else {
+      throw new Error("Erreur lors de l'ajout de la phrase");
+    }
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de la phrase:", error);
+  }
 
   // Effacer l'input après l'ajout
   document.getElementById("phraseInput").value = "";
-}
-
-// Fonction pour envoyer la base de données mise à jour au serveur
-async function envoyerBDD(baseDeDonnees) {
-  try {
-    await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(baseDeDonnees),
-    });
-  } catch (error) {
-    console.error("Erreur lors de l'envoi des données:", error);
-  }
 }
 
 // Fonction pour générer un code secret
