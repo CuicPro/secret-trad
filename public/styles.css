@@ -1,0 +1,116 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+body {
+  font-family: Arial, sans-serif;
+  background-color: #17153B;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100dvw;
+  height: 100dvh;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  row-gap: 20px;
+  padding: 20px;
+  color: #C8ACD6;
+  background: #2E236C;
+  border-radius: 30px;
+  max-width: 800px;
+  width: 70dvw;
+}
+.titleContainer{
+    display: flex;
+    flex-direction: column;
+}
+.smallContainer{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  row-gap: 20px;
+  width: 100%;
+}
+textarea {
+  width: calc(100% - 24px);
+  padding: 10px;
+  border: 2px solid #C8ACD6;
+  background-color: #433D8B;
+  border-radius: 10px;
+  font-size: 16px;
+  height: 100px;
+  resize: none;
+}
+textarea:nth-child(3){
+    outline: none;
+}
+.btnContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    height: 40px;
+    width: 100%;
+}
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #433D8B;
+  color: #C8ACD6;
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  height: 100%;
+  cursor: pointer;
+  font-size: 16px;
+}
+button:hover {
+  background-color: #433D8B90;
+}
+.switch-btn {
+  background-color: #C8ACD6;
+  padding: 10px 20px;
+  width: fit-content;
+  height: fit-content;
+  flex: 0;
+  color: #433D8B;
+}
+.switch-btn:hover {
+  background-color: #C8ACD690;
+}
+
+
+@media (min-width: 850px) {
+    .smallContainer{
+        flex-direction: row;
+    }
+}
+
+
+.notif{
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px;
+    border-radius: 10px;
+    color: #C8ACD6;
+    background: #443d8bc5;
+    animation: notifShowAndHide 2s forwards;
+}
+
+@keyframes notifShowAndHide {
+      0%{opacity: 0; transform: translate(-50%, 100%);}
+     10%{opacity: 1; transform: translate(-50%, 0%);}
+     70%{opacity: 1; transform: translate(-50%, 0%);}
+    100%{opacity: 0; transform: translate(-50%, -50%);}
+}
