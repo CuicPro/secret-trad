@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-require('dotenv').config(); // Charger les variables d'environnement
+require('dotenv').config();
+
 const app = express();
 
 const mongoURI = process.env.MONGO_URI;
@@ -18,18 +19,6 @@ const phraseSchema = new mongoose.Schema({
 const Phrase = mongoose.model('Phrase', phraseSchema);
 
 app.use(bodyParser.json());
-
-
-const path = require('path');
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Cette route va servir index.html par défaut
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-
 
 app.post('/ajouter', async (req, res) => {
   const { code, phrase } = req.body;
@@ -65,6 +54,11 @@ app.delete('/supprimer/:code', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur en écoute sur le port ${PORT}`));
