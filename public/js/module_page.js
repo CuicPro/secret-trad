@@ -35,16 +35,22 @@ document.getElementById("result").addEventListener("click", function () {
     // Supprimer la zone de texte temporaire
     document.body.removeChild(textarea);
     
-    // Optionnel : vous pouvez ajouter un message de confirmation ici
     const message = "Texte copié dans le presse-papier !";
     console.log(message);
     notif(message);
   }else{
-    // Optionnel : vous pouvez ajouter un message de confirmation ici
     const message = "Rien n'a copier ici ...";
     console.log(message);
     notif(message);
   }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      if (translateBtn) {
+        translateBtn.click();
+      }
+    }
 });
 
 
